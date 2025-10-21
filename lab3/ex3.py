@@ -6,10 +6,9 @@ from matplotlib import pyplot as plt
 #from scipy.ndimage import sobel
 import cv2
 
-path = "../IMAGES_TP/Resize.png"
+path = "../Images_TP/Resize.png"
 img = np.array(Image.open(path).convert("RGB"))
 #%%
-
 def compute_energy(image):
     #re-calcule du gris est plus rapide que carve_seam(gray)
     gray = .299*img[:, :, 0] + .587*img[:, :, 1] + .114*img[:, :, 2]
@@ -50,21 +49,25 @@ def carve_vertical_seam(image, seam):
 def show_seam(image,seam,n,num_seams):
     for i, j in seam:
         image[i, j] = [255,0,0]
-    plt.title(f'seam : {n+1} /{num_seams}')
+    plt.title(f'seam : {n+1} /{num_seams}  (size image : {image.shape})')
     plt.imshow(image)
     plt.show()
 
 
+def seam_carving(img,nb_seams): 
+    # nb_seams = nombre de seams à supprimer
+    img_new = np.copy(img)
+    for n in range(nb_seams):
+        energy = compute_energy(img_new)
+        seam = find_vertical_seam(energy)
+        show_seam(img_new,seam,n,nb_seams) #affichage de l'éclair
+        img_new = carve_vertical_seam(img_new, seam)
+    return img_new
+
 image_w = img.shape[1]
-
-num_seams = image_w//4  # nombre de seams à supprimer
-for n in range(num_seams):
-    energy = compute_energy(img)
-    seam = find_vertical_seam(energy)
-    show_seam(img,seam,n,num_seams) #affichage de l'éclair
-    img = carve_vertical_seam(img, seam)
-
-plt.title('image finale')
-plt.imshow(img)
+N = image_w//16  # N : nombre de seams à supprimer
+img_new = seam_carving(img,N)
+plt.title(f'image finale  (size image : {img_new.shape})')
+plt.imshow(img_new)
 plt.show()
 
